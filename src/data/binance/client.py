@@ -2,7 +2,7 @@
 """
 # %% Setup
 # stdlib
-from typing import Callable
+from typing import Callable, Optional
 from time import monotonic
 from datetime import datetime
 from itertools import chain
@@ -68,20 +68,25 @@ def get_total_minutes(interval):
     return time
 
 class BinanceClient:
-    def __init__(self, logger: Callable = None):
+    def __init__(self, logger: Optional[Callable] = None):
         self.logger = logger
 
     @staticmethod
     def _parse_symbol_data(info_df: pl.DataFrame, data_df: pl.DataFrame):
         info_df = info_df.filter(pl.col('quoteAsset').str.contains('BTC|USDT'))
 
-        df = (info_df
-              .join(data_df, on='symbol')
-              .select(['symbol', 'baseAsset', 'quoteAsset', 'weightedAvgPrice', 'volume'])
-              .with_column((pl.col('weightedAvgPrice').cast(pl.datatypes.Float64) *
-                            pl.col('volume').cast(pl.datatypes.Float64)).alias('liquidity'))
-              .filter(pl.col('liquidity') > 0)
-              )
+        df = (
+            info_df
+                .join(data_df, on='symbol')
+                .select(['symbol', 'baseAsset', 'quoteAsset', 'weightedAvgPrice', 'volume'])
+                .with_column(
+                    (
+                        pl.col('weightedAvgPrice').cast(pl.Float64) *
+                        pl.col('volume').cast(pl.Float64)
+                    ).alias('liquidity')
+                    )
+                .filter(pl.col('liquidity') > 0)
+        )
 
         return df
 
@@ -149,16 +154,17 @@ class BinanceClient:
     @staticmethod
     def process_klines(kline_dict):
         kline_df = pl.from_dicts(kline_dict).lazy()
-        kline_df = (kline_df
-                    .with_column(pl.col('Open time').cast(pl.datatypes.Datetime))
-                    .with_column(pl.col('Close time').cast(pl.datatypes.Datetime))
-                    .with_column(pl.col('Open').cast(pl.datatypes.Float64))
-                    .with_column(pl.col('High').cast(pl.datatypes.Float64))
-                    .with_column(pl.col('Low').cast(pl.datatypes.Float64))
-                    .with_column(pl.col('Close').cast(pl.datatypes.Float64))
-                    .with_column(pl.col('Volume').cast(pl.datatypes.Float64))
-                    .collect()
-                    )
+        kline_df = (
+            kline_df
+                .with_column(pl.col('Open time').cast(pl.Datetime).dt.and_time_unit("ms"))
+                .with_column(pl.col('Close time').cast(pl.Datetime).dt.and_time_unit("ms"))
+                .with_column(pl.col('Open').cast(pl.Float64))
+                .with_column(pl.col('High').cast(pl.Float64))
+                .with_column(pl.col('Low').cast(pl.Float64))
+                .with_column(pl.col('Close').cast(pl.Float64))
+                .with_column(pl.col('Volume').cast(pl.Float64))
+                .collect()
+        )
 
         return kline_df
 

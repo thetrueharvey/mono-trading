@@ -1,7 +1,12 @@
+aiohttp
+mpire
+orjson
+
+ta
+
+pandas
+pyarrow
+polars
+
 backtesting
 jupyter
-ta
-mpire
-polars
-aiohttp
-orjson

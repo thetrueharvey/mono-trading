@@ -19,13 +19,13 @@ from .constants import *
 # %% General utilities
 def create_empty_schema():
     data = [
-        pl.Series("Open time", [], dtype=pl.Datetime),
+        pl.Series("Open time", [], dtype=pl.Datetime).dt.and_time_unit('ms'),
         pl.Series("Open", [], dtype=pl.Float64),
         pl.Series("High", [], dtype=pl.Float64),
         pl.Series("Low", [], dtype=pl.Float64),
         pl.Series("Close", [], dtype=pl.Float64),
         pl.Series("Volume", [], dtype=pl.Float64),
-        pl.Series("Close time", [], dtype=pl.Datetime)
+        pl.Series("Close time", [], dtype=pl.Datetime).dt.and_time_unit('ms')
     ]
 
     return pl.DataFrame(data)
@@ -49,10 +49,11 @@ async def update_kline_data(
             save_path.mkdir(parents=True)
 
         try:
-            kline_df = pl.read_parquet(source=save_path / f"{symbol}_{interval}.parquet")
+            kline_df = pl.read_parquet(
+                source=(save_path / f"{symbol}_{interval}").with_suffix(".parquet")
+            )
             start_time = str(datetime.fromtimestamp(kline_df["Close time"].max() / 1e3) + timedelta(milliseconds=1)) + ".000000"
         except FileNotFoundError:
-            #logger(timestamp=datetime.now(), message=f"Fetching all data for {symbol}")
             kline_df = create_empty_schema()
             start_time = default_start
 
