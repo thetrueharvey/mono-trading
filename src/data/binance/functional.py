@@ -75,7 +75,7 @@ async def update_kline_data(
 
         if kline_df_ is not None:
             kline_df.vstack(kline_df_, in_place=True)
-            kline_df.sort(by="Open time").distinct().to_parquet(file=save_path / f"{symbol}_{interval}.parquet")
+            kline_df.sort(by="Open time").distinct().write_parquet(file=save_path / f"{symbol}_{interval}.parquet")
 
 
 # %% Update Pipeline
@@ -99,7 +99,7 @@ async def kline_pipeline(
             save_path.mkdir(parents=True)
 
         exchange_df = await BinanceClient().get_exchange_data()
-        exchange_df.to_parquet(file=exchange_save_path)
+        exchange_df.write_parquet(file=exchange_save_path)
 
         symbols = exchange_df.sort("liquidity", reverse=True)["symbol"].to_list()
 
