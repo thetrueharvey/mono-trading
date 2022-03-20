@@ -1,0 +1,7 @@
+backtesting
+jupyter
+ta
+mpire
+polars
+aiohttp
+orjson
