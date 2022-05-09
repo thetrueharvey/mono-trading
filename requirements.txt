@@ -2,11 +2,10 @@ aiohttp
 mpire
 orjson
 
-ta
+pydantic
 
 pandas
 pyarrow
 polars
 
-backtesting
-jupyter
+ipykernel
