@@ -990,9 +990,11 @@ dependencies = [
 name = "mono-trading"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "polars",
  "reqwest",
  "serde",
+ "thiserror",
  "tokio",
 ]
 
